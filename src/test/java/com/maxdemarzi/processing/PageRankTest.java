@@ -9,14 +9,13 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class PageRankTest {
-    public static final double EXPECTED = 4.778829041015646;
+    public static final double EXPECTED_20 = 4.778829041015646;
+    public static final double EXPECTED_5 = 2.5952823162078857;
     private GraphDatabaseService db;
     private static Service service;
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -48,7 +47,7 @@ public class PageRankTest {
         String response = service.pageRank("Person", "KNOWS", db);
         assertEquals("PageRank for Person and KNOWS Completed!", response);
 
-        dumpResults();
+        dumpResults(EXPECTED_5);
 
     }
     @Test
@@ -56,7 +55,7 @@ public class PageRankTest {
         PageRank pageRank = new PageRankArrayStorageSPI(db);
         pageRank.computePageRank("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
-        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+        assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);
     }
     @Test
@@ -64,7 +63,7 @@ public class PageRankTest {
         PageRank pageRank = new PageRankArrayStorage(db);
         pageRank.computePageRank("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
-        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+        assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);
     }
     @Test
@@ -72,7 +71,7 @@ public class PageRankTest {
         PageRank pageRank = new PageRankMapStorage(db);
         pageRank.computePageRank("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
-        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+        assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);
     }
 
@@ -82,11 +81,11 @@ public class PageRankTest {
         }
     }
 
-    private void dumpResults() {
+    private void dumpResults(double expected) {
         Map<String, Object> row = getEntry("Tom Hanks");
 //        assertEquals( 4.642800717539658, pageranks.next() );
         double rank = (double) row.get("pagerank");
-        assertEquals(EXPECTED, rank,0.1D);
+        assertEquals(expected, rank,0.1D);
         System.out.println(row);
     }
 
