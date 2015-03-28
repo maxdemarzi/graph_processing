@@ -1,7 +1,9 @@
 package com.maxdemarzi.processing;
 
-import it.unimi.dsi.fastutil.longs.*;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.ws.rs.GET;
@@ -38,6 +40,32 @@ public class Service {
     public String pageRank(@PathParam("label") String label,
                            @PathParam("type") String type,
                            @Context GraphDatabaseService db) {
+
+        PageRank pageRank = new PageRankMapStorage(db);
+        pageRank.computePageRank(label,type,20);
+        writeBackResults(db,pageRank);
+
+        return "PageRank for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/pagerank2/{label}/{type}")
+    public String pageRank2(@PathParam("label") String label,
+                            @PathParam("type") String type,
+                            @Context GraphDatabaseService db) {
+
+        PageRank pageRank = new PageRankArrayStorage(db);
+        pageRank.computePageRank(label,type,20);
+        writeBackResults(db,pageRank);
+
+        return "PageRank for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/pagerank3/{label}/{type}")
+    public String pageRank3(@PathParam("label") String label,
+                            @PathParam("type") String type,
+                            @Context GraphDatabaseService db) {
 
         PageRank pageRank = new PageRankArrayStorageSPI(db);
         pageRank.computePageRank(label,type,20);
