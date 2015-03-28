@@ -5,10 +5,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.core.NodeManager;
-import org.neo4j.kernel.impl.store.id.IdGenerator;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 /**
@@ -22,8 +18,7 @@ public class PageRankMapStorage implements PageRank {
 
     public PageRankMapStorage(GraphDatabaseService db) {
         this.db = db;
-        NeoStoreProvider neoStoreProvider = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override

@@ -1,14 +1,14 @@
 package com.maxdemarzi.processing;
 
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.api.ReadOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.impl.api.RelationshipVisitor;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Arrays;
 
@@ -23,9 +23,7 @@ public class PageRankArrayStorageSPI implements PageRank {
 
     public PageRankArrayStorageSPI(GraphDatabaseService db) {
         this.db = (GraphDatabaseAPI) db;
-        NeoStoreProvider neoStoreProvider = this.db.getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
-
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override
@@ -37,7 +35,7 @@ public class PageRankArrayStorageSPI implements PageRank {
         try ( Transaction tx = db.beginTx()) {
 
             ThreadToStatementContextBridge ctx = this.db.getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
-            ReadOperations ops = ctx.instance().readOperations();
+            ReadOperations ops = ctx.get().readOperations();
             int labelId = ops.labelGetForName(label);
             int typeId = ops.relationshipTypeGetForName(type);
 

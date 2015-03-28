@@ -1,9 +1,6 @@
 package com.maxdemarzi.processing;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.neo4j.graphdb.*;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
@@ -16,20 +13,20 @@ import static org.junit.Assert.assertEquals;
 public class PageRankTest {
     public static final double EXPECTED_20 = 4.778829041015646;
     public static final double EXPECTED_5 = 2.5952823162078857;
-    private GraphDatabaseService db;
-    private static Service service;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Label label = DynamicLabel.label("Person");
-    private static final RelationshipType relationshipType = DynamicRelationshipType.withName("KNOWS");
+    public static final String LABEL = "Person";
+    public static final String REL_TYPE = "KNOWS";
 
-    @Before
-    public void setUp() {
+    private static GraphDatabaseService db;
+    private static Service service;
+
+    @BeforeClass
+    public static void setUp() {
         db = new TestGraphDatabaseFactory().newImpermanentDatabase();
         service = new Service();
         populateDb(db);
     }
 
-    private void populateDb(GraphDatabaseService db) {
+    private static void populateDb(GraphDatabaseService db) {
         try ( Transaction tx = db.beginTx()) {
             db.execute(TestObjects.MOVIES_QUERY);
             db.execute(TestObjects.KNOWS_QUERY);
@@ -37,14 +34,14 @@ public class PageRankTest {
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         db.shutdown();
     }
 
     @Test
     public void shouldGetRecommendation() throws IOException {
-        String response = service.pageRank("Person", "KNOWS", db);
+        String response = service.pageRank(LABEL, REL_TYPE, db);
         assertEquals("PageRank for Person and KNOWS Completed!", response);
 
         dumpResults(EXPECTED_5);
@@ -53,7 +50,7 @@ public class PageRankTest {
     @Test
     public void shouldGetRecommendationArrayStorageSPI() throws IOException {
         PageRank pageRank = new PageRankArrayStorageSPI(db);
-        pageRank.computePageRank("Person", "KNOWS", 20);
+        pageRank.computePageRank(LABEL, REL_TYPE, 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);
@@ -61,7 +58,7 @@ public class PageRankTest {
     @Test
     public void shouldGetRecommendationArrayStorage() throws IOException {
         PageRank pageRank = new PageRankArrayStorage(db);
-        pageRank.computePageRank("Person", "KNOWS", 20);
+        pageRank.computePageRank(LABEL, REL_TYPE, 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);
@@ -69,7 +66,7 @@ public class PageRankTest {
     @Test
     public void shouldGetRecommendationMapStorage() throws IOException {
         PageRank pageRank = new PageRankMapStorage(db);
-        pageRank.computePageRank("Person", "KNOWS", 20);
+        pageRank.computePageRank(LABEL, REL_TYPE, 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
 //        dump(pageRank);

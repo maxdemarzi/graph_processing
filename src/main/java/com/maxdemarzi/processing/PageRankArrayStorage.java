@@ -1,8 +1,6 @@
 package com.maxdemarzi.processing;
 
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Arrays;
@@ -18,8 +16,7 @@ public class PageRankArrayStorage implements PageRank {
 
     public PageRankArrayStorage(GraphDatabaseService db) {
         this.db = db;
-        NeoStoreProvider neoStoreProvider = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override
