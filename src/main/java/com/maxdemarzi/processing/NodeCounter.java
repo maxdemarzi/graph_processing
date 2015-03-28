@@ -13,4 +13,8 @@ public class NodeCounter {
         NeoStore neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStore.class);
         return (int) neoStore.getNodeStore().getHighId();
     }
+    public int getRelationshipCount(GraphDatabaseService db) {
+        NeoStore neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStore.class);
+        return (int) neoStore.getRelationshipStore().getHighId();
+    }
 }

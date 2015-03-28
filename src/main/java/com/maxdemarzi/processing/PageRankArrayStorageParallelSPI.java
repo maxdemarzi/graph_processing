@@ -1,5 +1,6 @@
 package com.maxdemarzi.processing;
 
+import com.google.common.util.concurrent.AtomicDoubleArray;
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -25,19 +26,21 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
     private final GraphDatabaseAPI db;
     private final int nodeCount;
     private final ExecutorService pool;
-    private float[] dst;
+    private final int relCount;
+    private AtomicDoubleArray dst;
 
     public PageRankArrayStorageParallelSPI(GraphDatabaseService db, ExecutorService pool) {
         this.pool = pool;
         this.db = (GraphDatabaseAPI) db;
         this.nodeCount = new NodeCounter().getNodeCount(db);
+        this.relCount = new NodeCounter().getRelationshipCount(db);
     }
 
     @Override
     public void computePageRank(String label, String type, int iterations) {
 
         float[] src = new float[nodeCount];
-        dst = new float[nodeCount];
+        dst = new AtomicDoubleArray(nodeCount);
 
         try ( Transaction tx = db.beginTx()) {
 
@@ -51,7 +54,7 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
             RelationshipVisitor<RuntimeException> visitor = new RelationshipVisitor<RuntimeException>() {
                 public void visit(long relId, int relTypeId, long startNode, long endNode) throws RuntimeException {
                     if (relTypeId == typeId) {
-                        dst[((int) endNode)] += src[(int) startNode];
+                        dst.addAndGet(((int) endNode),src[(int) startNode]);
                     }
                 }
             };
@@ -60,9 +63,11 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
                 startIteration(src, dst, degrees);
 
                 PrimitiveLongIterator rels = ops.relationshipsGetAll();
-                while (rels.hasNext()) {
-                    ops.relationshipVisit(rels.next(), visitor);
-                }
+                runOperations(rels, relCount , ops, new OpsRunner() {
+                    public void run(int id) throws EntityNotFoundException {
+                        ops.relationshipVisit(id, visitor);
+                    }
+                });
             }
             tx.success();
         } catch (EntityNotFoundException e) {
@@ -70,12 +75,12 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
         }
     }
 
-    private void startIteration(float[] src, float[] dst, int[] degrees) {
+    private void startIteration(float[] src, AtomicDoubleArray dst, int[] degrees) {
         for (int node = 0; node < this.nodeCount; node++) {
             if (degrees[node] == -1) continue;
-            src[node]= (float) (ALPHA * dst[node] / degrees[node]);
+            src[node]= (float) (ALPHA * dst.getAndSet(node, ONE_MINUS_ALPHA) / degrees[node]);
+
         }
-        Arrays.fill(dst, (float) ONE_MINUS_ALPHA);
     }
 
     private int[] computeDegrees(ReadOperations ops, int labelId, int relationshipId) throws EntityNotFoundException {
@@ -144,7 +149,7 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
     }
     @Override
     public double getRankOfNode(long node) {
-        return dst != null ? dst[((int) node)] : 0;
+        return dst != null ? dst.get((int) node) : 0;
     }
 
     @Override
