@@ -46,14 +46,36 @@ public class PageRankTest {
         String response = service.pageRank("Person", "KNOWS", db);
         assertEquals("PageRank for Person and KNOWS Completed!", response);
 
+        dumpResults();
+
+    }
+    @Test
+    public void shouldGetRecommendationArrayStorage() throws IOException {
+        PageRank pageRank = new PageRankArrayStorage(db);
+        pageRank.computePageRank("Person", "KNOWS", 5);
+        dump(pageRank);
+    }
+    @Test
+    public void shouldGetRecommendationMapStorage() throws IOException {
+        PageRank pageRank = new PageRankMapStorage(db);
+        pageRank.computePageRank("Person", "KNOWS", 5);
+        dump(pageRank);
+    }
+
+    private void dump(PageRank pageRank) {
+        for (int node = 0;node < pageRank.numberOfNodes();node++) {
+            System.out.printf("%d -> %.5f %n", node, pageRank.getRankOfNode(node));
+        }
+    }
+
+    private void dumpResults() {
         Map<String, Object> params = new HashMap<>();
         params.put( "name", "Tom Hanks" );
 
         Result result = db.execute(TestObjects.PERSON_PG_QUERY, params);
         Iterator<Object> pageranks = result.columnAs( "p.pagerank" );
-        //assertEquals( 4.642800717539658, pageranks.next() );
-
-
+        assertEquals( 4.642800717539658, pageranks.next() );
+        System.out.println(result.resultAsString());
     }
 
 }
