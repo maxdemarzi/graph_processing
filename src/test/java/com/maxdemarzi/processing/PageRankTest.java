@@ -56,6 +56,14 @@ public class PageRankTest {
 //        dump(pageRank);
     }
     @Test
+    public void shouldGetRecommendationArrayStorageParallelSPI() throws IOException {
+        PageRank pageRank = new PageRankArrayStorageParallelSPI(db,Utils.createPool(4,100));
+        pageRank.computePageRank(LABEL, REL_TYPE, 20);
+        long id = (long) getEntry("Tom Hanks").get("id");
+        assertEquals(EXPECTED_20, pageRank.getRankOfNode(id),0.1D);
+//        dump(pageRank);
+    }
+    @Test
     public void shouldGetRecommendationArrayStorage() throws IOException {
         PageRank pageRank = new PageRankArrayStorage(db);
         pageRank.computePageRank(LABEL, REL_TYPE, 20);

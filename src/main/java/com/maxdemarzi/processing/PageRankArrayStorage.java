@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class PageRankArrayStorage implements PageRank {
     private final GraphDatabaseService db;
     private final int nodes;
-    private float[] dstMap;
+    private float[] dst;
 
     public PageRankArrayStorage(GraphDatabaseService db) {
         this.db = db;
@@ -22,23 +22,23 @@ public class PageRankArrayStorage implements PageRank {
     @Override
     public void computePageRank(String label, String type, int iterations) {
 
-        float[] srcMap = new float[nodes];
-        dstMap = new float[nodes];
+        float[] src = new float[nodes];
+        dst = new float[nodes];
 
         RelationshipType relationshipType = DynamicRelationshipType.withName(type);
 
         try ( Transaction tx = db.beginTx()) {
-            int[] degreeMap = computeDegrees(label, relationshipType);
+            int[] degrees = computeDegrees(label, relationshipType);
 
             for (int iteration = 0; iteration < iterations; iteration++) {
 
-                startIteration(srcMap, dstMap, degreeMap);
+                startIteration(src, dst, degrees);
 
                 for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
                     if (relationship.isType(relationshipType)) {
                         int x = (int) relationship.getStartNode().getId();
                         int y = (int) relationship.getEndNode().getId();
-                        dstMap[y] += srcMap[x];
+                        dst[y] += src[x];
                     }
                 }
             }
@@ -67,7 +67,7 @@ public class PageRankArrayStorage implements PageRank {
 
     @Override
     public double getRankOfNode(long node) {
-        return dstMap != null ? dstMap[((int) node)] : 0;
+        return dst != null ? dst[((int) node)] : 0;
     }
 
     @Override

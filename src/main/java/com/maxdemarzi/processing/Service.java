@@ -1,6 +1,5 @@
 package com.maxdemarzi.processing;
 
-import it.unimi.dsi.fastutil.longs.*;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -45,19 +44,14 @@ public class Service {
                            @PathParam("type") String type,
                            @Context GraphDatabaseService db) {
 
-        PageRank pageRank = new PageRankArrayStorageSPI(db);
+        PageRank pageRank = new PageRankArrayStorageParallelSPI(db,pool);
         pageRank.computePageRank(label,type, ITERATIONS);
         writeBackResults(db,pageRank);
 
         return "PageRank for " + label + " and " + type + " Completed!";
     }
 
-    static ExecutorService pool = createPool(4,100);
-
-    private static ExecutorService createPool(int threads, int queueSize) {
-        return new ThreadPoolExecutor(1, threads, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>(queueSize),
-                new ThreadPoolExecutor.CallerRunsPolicy());
-    }
+    static ExecutorService pool = Utils.createPool(4, 100);
 
     private void writeBackResults(GraphDatabaseService db, PageRank pageRank) {
         final long nodes = pageRank.numberOfNodes();
@@ -82,23 +76,6 @@ public class Service {
             });
             futures.add(future);
         }
-        waitForTasks(futures);
+        Utils.waitForTasks(futures);
     }
-
-    private int waitForTasks(List<Future> futures) {
-        int total = 0;
-        for (Future future : futures) {
-            try {
-                future.get();
-                total ++;
-            } catch (InterruptedException e) {
-                // ignore
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-        futures.clear();
-        return total;
-    }
-
 }
