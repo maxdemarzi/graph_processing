@@ -8,6 +8,7 @@ import org.neo4j.graphdb.*;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class PageRankTest {
+    public static final double EXPECTED = 4.778829041015646;
     private GraphDatabaseService db;
     private static Service service;
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -52,14 +54,18 @@ public class PageRankTest {
     @Test
     public void shouldGetRecommendationArrayStorage() throws IOException {
         PageRank pageRank = new PageRankArrayStorage(db);
-        pageRank.computePageRank("Person", "KNOWS", 5);
-        dump(pageRank);
+        pageRank.computePageRank("Person", "KNOWS", 20);
+        long id = (long) getEntry("Tom Hanks").get("id");
+        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+//        dump(pageRank);
     }
     @Test
     public void shouldGetRecommendationMapStorage() throws IOException {
         PageRank pageRank = new PageRankMapStorage(db);
-        pageRank.computePageRank("Person", "KNOWS", 5);
-        dump(pageRank);
+        pageRank.computePageRank("Person", "KNOWS", 20);
+        long id = (long) getEntry("Tom Hanks").get("id");
+        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+//        dump(pageRank);
     }
 
     private void dump(PageRank pageRank) {
@@ -69,13 +75,17 @@ public class PageRankTest {
     }
 
     private void dumpResults() {
-        Map<String, Object> params = new HashMap<>();
-        params.put( "name", "Tom Hanks" );
+        Map<String, Object> row = getEntry("Tom Hanks");
+//        assertEquals( 4.642800717539658, pageranks.next() );
+        double rank = (double) row.get("pagerank");
+        assertEquals(EXPECTED, rank,0.1D);
+        System.out.println(row);
+    }
 
-        Result result = db.execute(TestObjects.PERSON_PG_QUERY, params);
-        Iterator<Object> pageranks = result.columnAs( "p.pagerank" );
-        assertEquals( 4.642800717539658, pageranks.next() );
-        System.out.println(result.resultAsString());
+    private Map<String, Object> getEntry(String name) {
+        try (Result result = db.execute(TestObjects.PERSON_PG_QUERY, Collections.singletonMap("name", name))) {
+            return result.next();
+        }
     }
 
 }
