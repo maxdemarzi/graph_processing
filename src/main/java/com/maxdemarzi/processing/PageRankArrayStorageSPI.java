@@ -43,9 +43,11 @@ public class PageRankArrayStorageSPI implements PageRank {
 
             int[] degreeMap = computeDegrees(ops,labelId, typeId);
 
-            RelationshipVisitor<RuntimeException> visitor = (relId, relTypeId, startNode, endNode) -> {
-                if (relTypeId == typeId) {
-                    dst[((int) endNode)] += srcMap[(int) startNode];
+            RelationshipVisitor<RuntimeException> visitor = new RelationshipVisitor<RuntimeException>() {
+                public void visit(long relId, int relTypeId, long startNode, long endNode) throws RuntimeException {
+                    if (relTypeId == typeId) {
+                        dst[((int) endNode)] += srcMap[(int) startNode];
+                    }
                 }
             };
 
