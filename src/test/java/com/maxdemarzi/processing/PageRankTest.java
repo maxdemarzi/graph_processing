@@ -52,6 +52,14 @@ public class PageRankTest {
 
     }
     @Test
+    public void shouldGetRecommendationArrayStorageSPI() throws IOException {
+        PageRank pageRank = new PageRankArrayStorageSPI(db);
+        pageRank.computePageRank("Person", "KNOWS", 20);
+        long id = (long) getEntry("Tom Hanks").get("id");
+        assertEquals(EXPECTED, pageRank.getRankOfNode(id),0.1D);
+//        dump(pageRank);
+    }
+    @Test
     public void shouldGetRecommendationArrayStorage() throws IOException {
         PageRank pageRank = new PageRankArrayStorage(db);
         pageRank.computePageRank("Person", "KNOWS", 20);

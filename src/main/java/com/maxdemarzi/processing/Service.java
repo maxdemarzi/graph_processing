@@ -39,7 +39,7 @@ public class Service {
                            @PathParam("type") String type,
                            @Context GraphDatabaseService db) {
 
-        PageRank pageRank = new PageRankMapStorage(db);
+        PageRank pageRank = new PageRankArrayStorageSPI(db);
         pageRank.computePageRank(label,type,20);
         writeBackResults(db,pageRank);
 
