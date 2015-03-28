@@ -44,9 +44,9 @@ public class Service {
                            @PathParam("type") String type,
                            @Context GraphDatabaseService db) {
 
-        PageRank pageRank = new PageRankArrayStorageParallelSPI(db,pool);
+        PageRankArrayStorageParallelSPI pageRank = new PageRankArrayStorageParallelSPI(db,pool);
         pageRank.computePageRank(label,type, ITERATIONS);
-        writeBackResults(db,pageRank);
+        pageRank.writeBackResults();
 
         return "PageRank for " + label + " and " + type + " Completed!";
     }
