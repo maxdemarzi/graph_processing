@@ -51,7 +51,7 @@ public class Service {
         return "PageRank for " + label + " and " + type + " Completed!";
     }
 
-    public static final int CPUS = Runtime.getRuntime().availableProcessors();
+    public static final int CPUS = 4; // Runtime.getRuntime().availableProcessors();
     static ExecutorService pool = Utils.createPool(CPUS, CPUS*25);
 
     private void writeBackResults(GraphDatabaseService db, PageRank pageRank) {
