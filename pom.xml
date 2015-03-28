@@ -79,31 +79,11 @@
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${jmh.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
             <version>${fastutil.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>koloboke-api-jdk6-7</artifactId>
-            <version>0.6.6</version>
-        </dependency>
-        <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>koloboke-impl-jdk6-7</artifactId>
-            <version>0.6.6</version>
-            <scope>runtime</scope>
-        </dependency>
-
     </dependencies>
 
     <build>

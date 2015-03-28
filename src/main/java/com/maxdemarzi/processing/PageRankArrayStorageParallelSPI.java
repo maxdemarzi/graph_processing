@@ -1,6 +1,5 @@
 package com.maxdemarzi.processing;
 
-import com.google.common.util.concurrent.AtomicDoubleArray;
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -17,17 +16,19 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * @author mh
  * @since 28.03.15
  */
 public class PageRankArrayStorageParallelSPI implements PageRank {
+    public static final int ONE_MINUS_ALPHA_INT = toInt(ONE_MINUS_ALPHA);
     private final GraphDatabaseAPI db;
     private final int nodeCount;
     private final ExecutorService pool;
     private final int relCount;
-    private AtomicDoubleArray dst;
+    private AtomicIntegerArray dst;
 
     public PageRankArrayStorageParallelSPI(GraphDatabaseService db, ExecutorService pool) {
         this.pool = pool;
@@ -39,8 +40,8 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
     @Override
     public void computePageRank(String label, String type, int iterations) {
 
-        float[] src = new float[nodeCount];
-        dst = new AtomicDoubleArray(nodeCount);
+        int[] src = new int[nodeCount];
+        dst = new AtomicIntegerArray(nodeCount);
 
         try ( Transaction tx = db.beginTx()) {
 
@@ -75,12 +76,19 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
         }
     }
 
-    private void startIteration(float[] src, AtomicDoubleArray dst, int[] degrees) {
+    private void startIteration(int[] src, AtomicIntegerArray dst, int[] degrees) {
         for (int node = 0; node < this.nodeCount; node++) {
             if (degrees[node] == -1) continue;
-            src[node]= (float) (ALPHA * dst.getAndSet(node, ONE_MINUS_ALPHA) / degrees[node]);
+            src[node]= toInt(ALPHA * toFloat(dst.getAndSet(node, ONE_MINUS_ALPHA_INT)) / degrees[node]);
 
         }
+    }
+
+    private static int toInt(double value) {
+        return (int) (100_000*value);
+    }
+    private static double toFloat(int value) {
+        return value / 100_000.0;
     }
 
     private int[] computeDegrees(ReadOperations ops, int labelId, int relationshipId) throws EntityNotFoundException {
@@ -149,7 +157,7 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
     }
     @Override
     public double getRankOfNode(long node) {
-        return dst != null ? dst.get((int) node) : 0;
+        return dst != null ? toFloat(dst.get((int) node)) : 0;
     }
 
     @Override
