@@ -1,4 +1,4 @@
-package com.maxdemarzi.processing;
+package com.maxdemarzi.processing.pagerank;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
@@ -6,8 +6,6 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.*;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.core.NodeManager;
-import org.neo4j.kernel.impl.store.id.IdGenerator;
 import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -27,7 +25,7 @@ public class PageRankMapStorage implements PageRank {
     }
 
     @Override
-    public void computePageRank(String label, String type, int iterations) {
+    public void compute(String label, String type, int iterations) {
         Long2DoubleMap srcMap = new Long2DoubleOpenHashMap();
         Long2LongMap degreeMap = new Long2LongOpenHashMap();
         dstMap = new Long2DoubleOpenHashMap(nodes);
@@ -64,7 +62,7 @@ public class PageRankMapStorage implements PageRank {
     }
 
     @Override
-    public double getRankOfNode(long node) {
+    public double getResult(long node) {
         return dstMap != null ? dstMap.get(node) : 0;
     }
 

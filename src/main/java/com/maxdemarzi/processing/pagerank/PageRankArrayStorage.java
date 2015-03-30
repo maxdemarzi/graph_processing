@@ -1,4 +1,4 @@
-package com.maxdemarzi.processing;
+package com.maxdemarzi.processing.pagerank;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.kernel.GraphDatabaseAPI;
@@ -23,7 +23,7 @@ public class PageRankArrayStorage implements PageRank {
     }
 
     @Override
-    public void computePageRank(String label, String type, int iterations) {
+    public void compute(String label, String type, int iterations) {
 
         float[] srcMap = new float[nodes];
         dstMap = new float[nodes];
@@ -69,7 +69,7 @@ public class PageRankArrayStorage implements PageRank {
     }
 
     @Override
-    public double getRankOfNode(long node) {
+    public double getResult(long node) {
         return dstMap != null ? dstMap[((int) node)] : 0;
     }
 

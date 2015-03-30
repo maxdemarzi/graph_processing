@@ -2,7 +2,7 @@ package com.maxdemarzi.processing;
 
 public class TestObjects {
 
-    public static final String PERSON_PG_QUERY = "MATCH (p:Person) WHERE p.name = {name} RETURN id(p) as id, p.name as name, p.pagerank as pagerank";
+    public static final String PERSON_PG_QUERY = "MATCH (p:Person) WHERE p.name = {name} RETURN id(p) as id, p.name as name, p.pagerank as pagerank, p.label as label";
 
     public static final String KNOWS_QUERY = "MATCH (a1:Person)-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coActors)\n" +
             "CREATE (a1)-[:KNOWS]->(coActors);";

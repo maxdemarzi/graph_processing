@@ -1,4 +1,4 @@
-package com.maxdemarzi.processing;
+package com.maxdemarzi.processing.pagerank;
 
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
 import org.neo4j.graphdb.*;
@@ -8,7 +8,6 @@ import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.impl.api.RelationshipVisitor;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
 import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Arrays;
 
@@ -29,7 +28,7 @@ public class PageRankArrayStorageSPI implements PageRank {
     }
 
     @Override
-    public void computePageRank(String label, String type, int iterations) {
+    public void compute(String label, String type, int iterations) {
 
         float[] srcMap = new float[nodes];
         dst = new float[nodes];
@@ -85,7 +84,7 @@ public class PageRankArrayStorageSPI implements PageRank {
     }
 
     @Override
-    public double getRankOfNode(long node) {
+    public double getResult(long node) {
         return dst != null ? dst[((int) node)] : 0;
     }
 
