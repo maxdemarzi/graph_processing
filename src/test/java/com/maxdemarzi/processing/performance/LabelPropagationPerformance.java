@@ -1,5 +1,7 @@
-package com.maxdemarzi.processing;
+package com.maxdemarzi.processing.performance;
 
+import com.maxdemarzi.processing.Service;
+import com.maxdemarzi.processing.TestObjects;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -9,7 +11,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
-public class PageRankPerformance {
+public class LabelPropagationPerformance {
     private Service service;
     private GraphDatabaseService db;
 
@@ -40,26 +42,7 @@ public class PageRankPerformance {
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void measurePageRank() throws IOException {
-        service.pageRank("Person", "KNOWS", db);
+        service.labelPropagation("Person", "KNOWS", 20, db);
     }
 
-    @Benchmark
-    @Warmup(iterations = 10)
-    @Measurement(iterations = 5)
-    @Fork(3)
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measurePageRank2() throws IOException {
-        service.pageRank2("Person", "KNOWS", db);
-    }
-
-    @Benchmark
-    @Warmup(iterations = 10)
-    @Measurement(iterations = 5)
-    @Fork(3)
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measurePageRank3() throws IOException {
-        service.pageRank3("Person", "KNOWS", db);
-    }
 }

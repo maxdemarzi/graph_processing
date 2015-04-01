@@ -3,6 +3,8 @@ Graph Processing
 
 This is an unmanaged extension with Graph Processing Algorithms on top of Neo4j.
 
+# Quick Start
+
 1. Build it:
 
         mvn clean package
@@ -24,7 +26,7 @@ This is an unmanaged extension with Graph Processing Algorithms on top of Neo4j.
 
 6. Create the Movie Dataset:
 
-        play :movies
+        :play movies
 
 7. Create KNOWS relationships amongst actors:
 
@@ -41,3 +43,30 @@ You should see "PageRank for Person and KNOWS Completed!"
 
         MATCH (n:Person) RETURN n ORDER BY n.pagerank DESC LIMIT 10;
 
+
+# Algorithms Implemented
+
+- Page Rank Map Storage
+- Page Rank Array Storage
+- Page Rank Array Storage Service Provider Interface (uses internal Neo4j methods)
+- Label Propagation Map Storage
+- Union Find Map Storage
+
+# Endpoints
+
+Replace "swordfish" below with your neo4j password.  The available endpoints are:
+
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/Person/KNOWS          # Map
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank2/Person/KNOWS         # Array
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank3/Person/KNOWS         # Array SPI
+        curl http://neo4j:swordfish@localhost:7474/service/v1/labelpropagation/Person/KNOWS  # Map
+        curl http://neo4j:swordfish@localhost:7474/service/v1/unionfind/Person/KNOWS         # Map
+
+An optional query parameter "iterations" has a default of 20.
+
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/Person/KNOWS?iterations=25
+
+# Performance
+
+There are some JMH performance tests included in this repository.
+Use [IntelliJ](https://www.jetbrains.com/idea/ "IntelliJ") and run them with the [JMH Plugin](https://github.com/artyushov/idea-jmh-plugin "JMH Plugin").

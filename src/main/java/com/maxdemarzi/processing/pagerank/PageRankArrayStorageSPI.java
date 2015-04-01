@@ -85,7 +85,7 @@ public class PageRankArrayStorageSPI implements PageRank {
 
     @Override
     public double getResult(long node) {
-        return dst != null ? dst[((int) node)] : 0;
+        return dst != null ? dst[((int) node)] : -1;
     }
 
     @Override

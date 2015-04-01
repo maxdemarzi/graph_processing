@@ -45,7 +45,7 @@ public class PageRankTest {
 
     @Test
     public void shouldGetPageRank() throws IOException {
-        String response = service.pageRank("Person", "KNOWS", db);
+        String response = service.pageRank("Person", "KNOWS", 20, db);
         assertEquals("PageRank for Person and KNOWS Completed!", response);
     }
 

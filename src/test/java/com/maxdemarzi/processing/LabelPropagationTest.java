@@ -43,12 +43,12 @@ public class LabelPropagationTest {
 
     @Test
     public void shouldPropagateLabels() throws IOException {
-        String response = service.labelPropagation("Person", "KNOWS", db);
+        String response = service.labelPropagation("Person", "KNOWS", 20, db);
         assertEquals("LabelPropagation for Person and KNOWS Completed!", response);
     }
 
     @Test
-    public void shouldGetPageRankMapStorage() throws IOException {
+    public void shouldGetPropagateLabelsMapStorage() throws IOException {
         LabelPropagation labelPropagation = new LabelPropagationMapStorage(db);
         labelPropagation.compute("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");

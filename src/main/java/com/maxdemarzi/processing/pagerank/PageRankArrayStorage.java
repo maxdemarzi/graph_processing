@@ -70,7 +70,7 @@ public class PageRankArrayStorage implements PageRank {
 
     @Override
     public double getResult(long node) {
-        return dstMap != null ? dstMap[((int) node)] : 0;
+        return dstMap != null ? dstMap[((int) node)] : -1;
     }
 
     @Override

@@ -6,15 +6,15 @@ import com.maxdemarzi.processing.pagerank.PageRank;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorage;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorageSPI;
 import com.maxdemarzi.processing.pagerank.PageRankMapStorage;
+import com.maxdemarzi.processing.unionfind.UnionFind;
+import com.maxdemarzi.processing.unionfind.UnionFindMapStorage;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 
 @Path("/v1")
@@ -45,10 +45,11 @@ public class Service {
     @Path("/pagerank/{label}/{type}")
     public String pageRank(@PathParam("label") String label,
                            @PathParam("type") String type,
+                           @DefaultValue("20") @QueryParam("iterations") int iterations,
                            @Context GraphDatabaseService db) {
 
         PageRank pageRank = new PageRankMapStorage(db);
-        pageRank.compute(label, type, 20);
+        pageRank.compute(label, type, iterations);
         writeBackResults(db,pageRank);
 
         return "PageRank for " + label + " and " + type + " Completed!";
@@ -58,10 +59,11 @@ public class Service {
     @Path("/pagerank2/{label}/{type}")
     public String pageRank2(@PathParam("label") String label,
                             @PathParam("type") String type,
+                            @DefaultValue("20") @QueryParam("iterations") int iterations,
                             @Context GraphDatabaseService db) {
 
         PageRank pageRank = new PageRankArrayStorage(db);
-        pageRank.compute(label, type, 20);
+        pageRank.compute(label, type, iterations);
         writeBackResults(db,pageRank);
 
         return "PageRank for " + label + " and " + type + " Completed!";
@@ -71,10 +73,11 @@ public class Service {
     @Path("/pagerank3/{label}/{type}")
     public String pageRank3(@PathParam("label") String label,
                             @PathParam("type") String type,
+                            @DefaultValue("20") @QueryParam("iterations") int iterations,
                             @Context GraphDatabaseService db) {
 
         PageRank pageRank = new PageRankArrayStorageSPI(db);
-        pageRank.compute(label, type, 20);
+        pageRank.compute(label, type, iterations);
         writeBackResults(db,pageRank);
 
         return "PageRank for " + label + " and " + type + " Completed!";
@@ -84,23 +87,37 @@ public class Service {
     @Path("/labelpropagation/{label}/{type}")
     public String labelPropagation(@PathParam("label") String label,
                            @PathParam("type") String type,
+                           @DefaultValue("20") @QueryParam("iterations") int iterations,
                            @Context GraphDatabaseService db) {
 
         LabelPropagation labelPropagation = new LabelPropagationMapStorage(db);
-        labelPropagation.compute(label, type, 20);
+        labelPropagation.compute(label, type, iterations);
         writeBackResults(db, labelPropagation);
 
         return "LabelPropagation for " + label + " and " + type + " Completed!";
     }
 
-    private void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
+    @GET
+    @Path("/unionfind/{label}/{type}")
+    public String unionFind(@PathParam("label") String label,
+                                   @PathParam("type") String type,
+                                   @Context GraphDatabaseService db) {
+
+        UnionFind unionFind = new UnionFindMapStorage(db);
+        unionFind.compute(label, type);
+        writeBackResults(db, unionFind);
+
+        return "UnionFind for " + label + " and " + type + " Completed!";
+    }
+
+    protected void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
         Transaction tx = db.beginTx();
         int counter = 0;
         String propertyName = algorithm.getPropertyName();
         try {
             for (long node = 0; node < algorithm.numberOfNodes(); node ++) {
                 double value = algorithm.getResult(node);
-                if (value > 0) {
+                if (value > -1) {
 	              db.getNodeById(node).setProperty(propertyName, value);
                   if (++counter % 10_000 == 0) {
       	            tx.success();
