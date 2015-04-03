@@ -63,7 +63,7 @@ public class PageRankMapStorage implements PageRank {
 
     @Override
     public double getResult(long node) {
-        return dstMap != null ? dstMap.get(node) : -1;
+        return dstMap != null ? dstMap.getOrDefault(node, -1D) : -1;
     }
 
     @Override

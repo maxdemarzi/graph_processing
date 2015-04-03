@@ -42,6 +42,6 @@ public class UnionFindPerformance {
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void measurePageRank() throws IOException {
-        service.unionFind("Person", "KNOWS", db);
+        service.unionFind("Person", "KNOWS", 0, db);
     }
 }

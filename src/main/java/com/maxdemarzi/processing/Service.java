@@ -101,10 +101,11 @@ public class Service {
     @Path("/unionfind/{label}/{type}")
     public String unionFind(@PathParam("label") String label,
                                    @PathParam("type") String type,
+                                   @DefaultValue("0") @QueryParam("iterations") int iterations,
                                    @Context GraphDatabaseService db) {
 
         UnionFind unionFind = new UnionFindMapStorage(db);
-        unionFind.compute(label, type);
+        unionFind.compute(label, type, iterations);
         writeBackResults(db, unionFind);
 
         return "UnionFind for " + label + " and " + type + " Completed!";
@@ -115,10 +116,11 @@ public class Service {
         int counter = 0;
         String propertyName = algorithm.getPropertyName();
         try {
-            for (long node = 0; node < algorithm.numberOfNodes(); node ++) {
-                double value = algorithm.getResult(node);
+            for (long nodeId = 0; nodeId < algorithm.numberOfNodes(); nodeId ++) {
+                double value = algorithm.getResult(nodeId);
                 if (value > -1) {
-	              db.getNodeById(node).setProperty(propertyName, value);
+                    Node node =  db.getNodeById(nodeId);
+                    node.setProperty(propertyName, value);
                   if (++counter % 10_000 == 0) {
       	            tx.success();
       	            tx.close();

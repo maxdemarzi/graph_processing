@@ -27,11 +27,6 @@ public class UnionFindMapStorage implements UnionFind {
 
     @Override
     public void compute(String label, String type, int iterations) {
-        compute(label, type);
-    }
-
-    @Override
-    public void compute(String label, String type) {
         RelationshipType relationshipType = DynamicRelationshipType.withName(type);
 
         try ( Transaction tx = db.beginTx()) {
@@ -39,7 +34,7 @@ public class UnionFindMapStorage implements UnionFind {
             while (nodes.hasNext()) {
                 long nodeId = nodes.next().getId();
                 rootMap.put(nodeId, nodeId);
-                rankMap.put(nodeId, 0);
+                rankMap.put(nodeId, 1);
             }
 
             for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
@@ -73,12 +68,36 @@ public class UnionFindMapStorage implements UnionFind {
                     }
                 }
             }
+
+            // This part is technically not necessary since we can just follow the unionfind property
+            // of any node UP the tree to see if it's really connected or not.
+
+            int iteration = 0;
+            boolean done = false;
+
+            while (!done && iterations > 0) {
+                done = true;
+                iteration++;
+                nodes = db.findNodes(DynamicLabel.label(label));
+                while (nodes.hasNext()) {
+                    long x = nodes.next().getId();
+                    if (rootMap.get(x) != x) {
+                        done = false;
+                        // This can be changed to be the GrandParent instead of Parent for faster convergence.
+                        rootMap.put(x, rootMap.get(rootMap.get(x)));
+                    }
+                }
+
+                if (iteration > iterations) {
+                    done = true;
+                }
+            }
         }
     }
 
     @Override
     public double getResult(long node) {
-        return rootMap != null ? rootMap.get(node) : -1;
+        return rootMap != null ? rootMap.getOrDefault(node, -1L) : -1;
     }
 
     @Override

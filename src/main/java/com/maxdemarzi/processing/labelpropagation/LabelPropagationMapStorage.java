@@ -58,7 +58,7 @@ public class LabelPropagationMapStorage implements LabelPropagation {
 
     @Override
     public double getResult(long node) {
-        return labelMap != null ? labelMap.get(node) : -1;
+        return labelMap != null ? labelMap.getOrDefault(node, -1D) : -1;
     }
 
     @Override

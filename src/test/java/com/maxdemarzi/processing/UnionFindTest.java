@@ -9,7 +9,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.io.IOException;
@@ -27,9 +26,9 @@ public class UnionFindTest {
     public void setUp() {
         db = new TestGraphDatabaseFactory().newImpermanentDatabase();
         String storeDir = "/Users/maxdemarzi/Projects/graph_processing/neo4j/data/graph.db";
-        db = new GraphDatabaseFactory()
-                .newEmbeddedDatabaseBuilder( storeDir )
-                .newGraphDatabase();
+        //db = new GraphDatabaseFactory()
+        //        .newEmbeddedDatabaseBuilder( storeDir )
+        //        .newGraphDatabase();
         service = new Service();
         populateDb(db);
     }
@@ -49,7 +48,7 @@ public class UnionFindTest {
 
     @Test
     public void shouldUnionFind() throws IOException {
-        String response = service.unionFind("Person", "KNOWS", db);
+        String response = service.unionFind("Person", "KNOWS", 0, db);
         assertEquals("UnionFind for Person and KNOWS Completed!", response);
     }
 
@@ -60,7 +59,7 @@ public class UnionFindTest {
         service.writeBackResults(db, unionFind);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, unionFind.getResult(id),0.1D);
-        dump(unionFind);
+        //dump(unionFind);
     }
 
     private void dump(UnionFind unionFind) {
@@ -70,10 +69,6 @@ public class UnionFindTest {
                 System.out.printf("%s = %d -> %.5f saved: %.5f %n", node.getProperty("name", "movie"), nodeId, unionFind.getResult(nodeId), (double)node.getProperty("unionfind",0D));
             }
         }
-    }
-
-    private void dumpResults() {
-
     }
 
     private Map<String, Object> getEntry(String name) {
