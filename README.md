@@ -3,6 +3,8 @@ Graph Processing
 
 This is an unmanaged extension with Graph Processing Algorithms on top of Neo4j.
 
+- [![Build Status](https://secure.travis-ci.org/maxdemarzi/graph_processing.png?branch=master)](http://travis-ci.org/maxdemarzi/graph_processing)
+
 # Quick Start
 
 1. Build it:
