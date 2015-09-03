@@ -45,23 +45,4 @@ public class PageRankPerformance {
         service.pageRank("Person", "KNOWS", 20, db);
     }
 
-    @Benchmark
-    @Warmup(iterations = 10)
-    @Measurement(iterations = 5)
-    @Fork(3)
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measurePageRank2() throws IOException {
-        service.pageRank2("Person", "KNOWS", 20, db);
-    }
-
-    @Benchmark
-    @Warmup(iterations = 10)
-    @Measurement(iterations = 5)
-    @Fork(3)
-    @BenchmarkMode(Mode.AverageTime)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measurePageRank3() throws IOException {
-        service.pageRank3("Person", "KNOWS", 20, db);
-    }
 }

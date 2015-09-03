@@ -3,18 +3,18 @@ package com.maxdemarzi.processing.labelpropagation;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.neo4j.graphdb.*;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
+import org.neo4j.kernel.impl.transaction.state.NeoStoreSupplier;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 public class LabelPropagationMapStorage implements LabelPropagation {
     private final GraphDatabaseService db;
-    private final int nodes;
+    private final long nodes;
     private Long2DoubleOpenHashMap labelMap;
 
     public LabelPropagationMapStorage(GraphDatabaseService db) {
         this.db = db;
-        NeoStoreProvider neoStoreProvider = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
+        NeoStoreSupplier neoStoreSupplier = ((GraphDatabaseAPI)db).getDependencyResolver().resolveDependency(NeoStoreSupplier.class);
+        this.nodes = neoStoreSupplier.get().getHighId();
     }
 
     @Override

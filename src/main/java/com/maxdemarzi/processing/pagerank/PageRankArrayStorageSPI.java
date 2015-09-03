@@ -1,13 +1,15 @@
 package com.maxdemarzi.processing.pagerank;
 
+import com.maxdemarzi.processing.NodeCounter;
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.api.ReadOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.impl.api.RelationshipVisitor;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
 
 import java.util.Arrays;
 
@@ -22,36 +24,34 @@ public class PageRankArrayStorageSPI implements PageRank {
 
     public PageRankArrayStorageSPI(GraphDatabaseService db) {
         this.db = (GraphDatabaseAPI) db;
-        NeoStoreProvider neoStoreProvider = this.db.getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
-
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override
     public void compute(String label, String type, int iterations) {
 
-        float[] srcMap = new float[nodes];
+        float[] src = new float[nodes];
         dst = new float[nodes];
 
         try ( Transaction tx = db.beginTx()) {
 
             ThreadToStatementContextBridge ctx = this.db.getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
-            ReadOperations ops = ctx.instance().readOperations();
+            ReadOperations ops = ctx.get().readOperations();
             int labelId = ops.labelGetForName(label);
             int typeId = ops.relationshipTypeGetForName(type);
 
-            int[] degreeMap = computeDegrees(ops,labelId, typeId);
+            int[] degrees = computeDegrees(ops,labelId, typeId);
 
             RelationshipVisitor<RuntimeException> visitor = new RelationshipVisitor<RuntimeException>() {
                 public void visit(long relId, int relTypeId, long startNode, long endNode) throws RuntimeException {
                     if (relTypeId == typeId) {
-                        dst[((int) endNode)] += srcMap[(int) startNode];
+                        dst[((int) endNode)] += src[(int) startNode];
                     }
                 }
             };
 
             for (int iteration = 0; iteration < iterations; iteration++) {
-                startIteration(srcMap, dst, degreeMap);
+                startIteration(src, dst, degrees);
 
                 PrimitiveLongIterator rels = ops.relationshipsGetAll();
                 while (rels.hasNext()) {
@@ -64,23 +64,23 @@ public class PageRankArrayStorageSPI implements PageRank {
         }
     }
 
-    private void startIteration(float[] srcMap, float[] dstMap, int[] degreeMap) {
+    private void startIteration(float[] src, float[] dst, int[] degrees) {
         for (int node = 0; node < this.nodes; node++) {
-            if (degreeMap[node] == -1) continue;
-            srcMap[node]= (float) (ALPHA * dstMap[node] / degreeMap[node]);
+            if (degrees[node] == -1) continue;
+            src[node]= (float) (ALPHA * dst[node] / degrees[node]);
         }
-        Arrays.fill(dstMap, (float) ONE_MINUS_ALPHA);
+        Arrays.fill(dst, (float) ONE_MINUS_ALPHA);
     }
 
     private int[] computeDegrees(ReadOperations ops, int labelId, int relationshipId) throws EntityNotFoundException {
-        int[] degreeMap = new int[nodes];
-        Arrays.fill(degreeMap,-1);
+        int[] degrees = new int[nodes];
+        Arrays.fill(degrees,-1);
         PrimitiveLongIterator nodes = ops.nodesGetForLabel(labelId);
         while (nodes.hasNext()) {
             long node = nodes.next();
-            degreeMap[((int)node)]= ops.nodeGetDegree(node, Direction.OUTGOING, relationshipId);
+            degrees[((int)node)]= ops.nodeGetDegree(node, Direction.OUTGOING, relationshipId);
         }
-        return degreeMap;
+        return degrees;
     }
 
     @Override

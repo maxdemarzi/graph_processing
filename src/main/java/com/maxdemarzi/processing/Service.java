@@ -2,10 +2,7 @@ package com.maxdemarzi.processing;
 
 import com.maxdemarzi.processing.labelpropagation.LabelPropagation;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagationMapStorage;
-import com.maxdemarzi.processing.pagerank.PageRank;
-import com.maxdemarzi.processing.pagerank.PageRankArrayStorage;
-import com.maxdemarzi.processing.pagerank.PageRankArrayStorageSPI;
-import com.maxdemarzi.processing.pagerank.PageRankMapStorage;
+import com.maxdemarzi.processing.pagerank.*;
 import com.maxdemarzi.processing.unionfind.UnionFind;
 import com.maxdemarzi.processing.unionfind.UnionFindMapStorage;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -16,9 +13,17 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 @Path("/v1")
 public class Service {
+
+    public static final int WRITE_BATCH = 10_000;
+    public static final int CPUS = Runtime.getRuntime().availableProcessors();
+    static ExecutorService pool = Utils.createPool(CPUS, CPUS*25);
 
     @GET
     @Path("/helloworld")
@@ -48,37 +53,9 @@ public class Service {
                            @DefaultValue("20") @QueryParam("iterations") int iterations,
                            @Context GraphDatabaseService db) {
 
-        PageRank pageRank = new PageRankMapStorage(db);
+        PageRankArrayStorageParallelSPI pageRank = new PageRankArrayStorageParallelSPI(db,pool);
         pageRank.compute(label, type, iterations);
-        writeBackResults(db,pageRank);
-
-        return "PageRank for " + label + " and " + type + " Completed!";
-    }
-
-    @GET
-    @Path("/pagerank2/{label}/{type}")
-    public String pageRank2(@PathParam("label") String label,
-                            @PathParam("type") String type,
-                            @DefaultValue("20") @QueryParam("iterations") int iterations,
-                            @Context GraphDatabaseService db) {
-
-        PageRank pageRank = new PageRankArrayStorage(db);
-        pageRank.compute(label, type, iterations);
-        writeBackResults(db,pageRank);
-
-        return "PageRank for " + label + " and " + type + " Completed!";
-    }
-
-    @GET
-    @Path("/pagerank3/{label}/{type}")
-    public String pageRank3(@PathParam("label") String label,
-                            @PathParam("type") String type,
-                            @DefaultValue("20") @QueryParam("iterations") int iterations,
-                            @Context GraphDatabaseService db) {
-
-        PageRank pageRank = new PageRankArrayStorageSPI(db);
-        pageRank.compute(label, type, iterations);
-        writeBackResults(db,pageRank);
+        pageRank.writeBackResults();
 
         return "PageRank for " + label + " and " + type + " Completed!";
     }
@@ -111,27 +88,32 @@ public class Service {
         return "UnionFind for " + label + " and " + type + " Completed!";
     }
 
-    protected void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
-        Transaction tx = db.beginTx();
-        int counter = 0;
+    private void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
         String propertyName = algorithm.getPropertyName();
-        try {
-            for (long nodeId = 0; nodeId < algorithm.numberOfNodes(); nodeId ++) {
-                double value = algorithm.getResult(nodeId);
-                if (value > -1) {
-                    Node node =  db.getNodeById(nodeId);
-                    node.setProperty(propertyName, value);
-                  if (++counter % 10_000 == 0) {
-      	            tx.success();
-      	            tx.close();
-      	            tx = db.beginTx();
-        	      }
+        final long nodes = algorithm.numberOfNodes();
+        int batches = (int) nodes / WRITE_BATCH;
+        List<Future> futures = new ArrayList<>(batches);
+        for (int node = 0; node < nodes; node += WRITE_BATCH) {
+            final int start = node;
+            Future future = pool.submit(new Runnable() {
+                public void run() {
+                    try (Transaction tx = db.beginTx()) {
+                        for (long i = 0; i < WRITE_BATCH; i++) {
+                            long node = i + start;
+                            if (node >= nodes) break;
+                            double value = algorithm.getResult(node);
+                            if (value > 0) {
+                                db.getNodeById(node).setProperty(propertyName, value);
+                            }
+                        }
+                        tx.success();
+                    }
                 }
-            }
-        } finally {
-            tx.success();
-            tx.close();
+            });
+            futures.add(future);
         }
-    }
+        Utils.waitForTasks(futures);
+        
 
+    }
 }

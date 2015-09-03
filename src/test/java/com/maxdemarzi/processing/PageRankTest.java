@@ -1,5 +1,7 @@
 package com.maxdemarzi.processing;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+
 import com.maxdemarzi.processing.pagerank.PageRank;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorage;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorageSPI;
@@ -10,6 +12,9 @@ import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
+import org.junit.*;
+import org.neo4j.graphdb.*;
+
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.io.IOException;
@@ -20,17 +25,17 @@ import static org.junit.Assert.assertEquals;
 
 public class PageRankTest {
     public static final double EXPECTED = 4.778829041015646;
-    private GraphDatabaseService db;
+    private static GraphDatabaseService db;
     private static Service service;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         db = new TestGraphDatabaseFactory().newImpermanentDatabase();
         service = new Service();
         populateDb(db);
     }
 
-    private void populateDb(GraphDatabaseService db) {
+    private static void populateDb(GraphDatabaseService db) {
         try ( Transaction tx = db.beginTx()) {
             db.execute(TestObjects.MOVIES_QUERY);
             db.execute(TestObjects.KNOWS_QUERY);
@@ -38,8 +43,8 @@ public class PageRankTest {
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         db.shutdown();
     }
 
@@ -55,7 +60,7 @@ public class PageRankTest {
         pageRank.compute("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, pageRank.getResult(id),0.1D);
-//        dump(pageRank);
+        // dump(pageRank);
     }
 
     @Test
@@ -64,8 +69,9 @@ public class PageRankTest {
         pageRank.compute("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, pageRank.getResult(id),0.1D);
-//        dump(pageRank);
+        //  dump(pageRank);
     }
+
 
     @Test
     public void shouldGetPageRankMapStorage() throws IOException {
@@ -73,7 +79,7 @@ public class PageRankTest {
         pageRank.compute("Person", "KNOWS", 20);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, pageRank.getResult(id),0.1D);
-//        dump(pageRank);
+        // dump(pageRank);
     }
 
     private void dump(PageRank pageRank) {
@@ -82,11 +88,11 @@ public class PageRankTest {
         }
     }
 
-    private void dumpResults() {
+    private void dumpResults(double expected) {
         Map<String, Object> row = getEntry("Tom Hanks");
 //        assertEquals( 4.642800717539658, pageranks.next() );
         double rank = (double) row.get("pagerank");
-        assertEquals(EXPECTED, rank,0.1D);
+        assertEquals(expected, rank,0.1D);
         System.out.println(row);
     }
 

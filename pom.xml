@@ -6,14 +6,22 @@
 
     <groupId>com.maxdemarzi</groupId>
     <artifactId>graph-processing</artifactId>
-    <version>1.0</version>
+    <version>2.3-SNAPSHOT</version>
 
     <properties>
-        <neo4j.version>2.2.0</neo4j.version>
+        <!--<neo4j.version>2.2.0</neo4j.version>-->
+        <neo4j.version>2.3-SNAPSHOT</neo4j.version>
         <guava.version>18.0</guava.version>
-        <jmh.version>1.6.1</jmh.version>
+        <jmh.version>1.10.5</jmh.version>
         <fastutil.version>7.0.2</fastutil.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>neo4j</id>
+            <url>http://m2.neo4j.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -46,6 +54,11 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-io</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-io</artifactId>
             <type>test-jar</type>
             <version>${neo4j.version}</version>
             <scope>test</scope>
@@ -71,31 +84,11 @@
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${jmh.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
             <version>${fastutil.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>koloboke-api-jdk6-7</artifactId>
-            <version>0.6.6</version>
-        </dependency>
-        <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>koloboke-impl-jdk6-7</artifactId>
-            <version>0.6.6</version>
-            <scope>runtime</scope>
-        </dependency>
-
     </dependencies>
 
     <build>

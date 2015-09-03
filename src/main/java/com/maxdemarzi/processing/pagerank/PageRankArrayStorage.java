@@ -1,8 +1,7 @@
 package com.maxdemarzi.processing.pagerank;
 
+import com.maxdemarzi.processing.NodeCounter;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Arrays;
@@ -14,34 +13,33 @@ import java.util.Arrays;
 public class PageRankArrayStorage implements PageRank {
     private final GraphDatabaseService db;
     private final int nodes;
-    private float[] dstMap;
+    private float[] dst;
 
     public PageRankArrayStorage(GraphDatabaseService db) {
         this.db = db;
-        NeoStoreProvider neoStoreProvider = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override
     public void compute(String label, String type, int iterations) {
 
-        float[] srcMap = new float[nodes];
-        dstMap = new float[nodes];
+        float[] src = new float[nodes];
+        dst = new float[nodes];
 
         RelationshipType relationshipType = DynamicRelationshipType.withName(type);
 
         try ( Transaction tx = db.beginTx()) {
-            int[] degreeMap = computeDegrees(label, relationshipType);
+            int[] degrees = computeDegrees(label, relationshipType);
 
             for (int iteration = 0; iteration < iterations; iteration++) {
 
-                startIteration(srcMap, dstMap, degreeMap);
+                startIteration(src, dst, degrees);
 
                 for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
                     if (relationship.isType(relationshipType)) {
                         int x = (int) relationship.getStartNode().getId();
                         int y = (int) relationship.getEndNode().getId();
-                        dstMap[y] += srcMap[x];
+                        dst[y] += src[x];
                     }
                 }
             }
@@ -70,11 +68,12 @@ public class PageRankArrayStorage implements PageRank {
 
     @Override
     public double getResult(long node) {
-        return dstMap != null ? dstMap[((int) node)] : -1;
+        return dst != null ? dst[((int) node)] : 0;
     }
 
     @Override
     public long numberOfNodes() {
         return nodes;
     }
+
 }

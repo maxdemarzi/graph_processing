@@ -1,9 +1,11 @@
 package com.maxdemarzi.processing.unionfind;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.*;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreProvider;
+import org.neo4j.kernel.impl.transaction.state.NeoStoreSupplier;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 /*
@@ -13,7 +15,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 public class UnionFindMapStorage implements UnionFind {
     private final GraphDatabaseService db;
-    private final int nodes;
+    private final long nodes;
     private Long2IntOpenHashMap rankMap;
     private Long2LongMap rootMap;
 
@@ -21,8 +23,8 @@ public class UnionFindMapStorage implements UnionFind {
         this.db = db;
         this.rootMap = new Long2LongOpenHashMap();
         this.rankMap = new Long2IntOpenHashMap();
-        NeoStoreProvider neoStoreProvider = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStoreProvider.class);
-        this.nodes = (int) neoStoreProvider.evaluate().getNodeStore().getHighId();
+        NeoStoreSupplier neoStoreSupplier = ((GraphDatabaseAPI)db).getDependencyResolver().resolveDependency(NeoStoreSupplier.class);
+        this.nodes = neoStoreSupplier.get().getHighId();
     }
 
     @Override

@@ -56,7 +56,6 @@ public class UnionFindTest {
     public void shouldGetUnionFindMapStorage() throws IOException {
         UnionFind unionFind = new UnionFindMapStorage(db);
         unionFind.compute("Person", "KNOWS", 20);
-        service.writeBackResults(db, unionFind);
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, unionFind.getResult(id),0.1D);
         //dump(unionFind);
