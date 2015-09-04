@@ -171,39 +171,5 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
         return nodeCount;
     }
 
-    public void writeBackResults() {
-        ThreadToStatementContextBridge ctx = db.getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
-        int pagerankId;
-        try (Transaction tx = db.beginTx()) {
-            pagerankId = ctx.get().tokenWriteOperations().propertyKeyGetOrCreateForName("pagerank");
-            tx.success();
-        } catch (IllegalTokenNameException e) {
-            throw new RuntimeException(e);
-        }
-        int batches = (int) nodeCount / BATCH_SIZE;
-        List<Future> futures = new ArrayList<>(batches);
-        for (int node = 0; node < nodeCount; node += BATCH_SIZE) {
-            final int start = node;
-            Future future = pool.submit(new Runnable() {
-                public void run() {
-                    try (Transaction tx = db.beginTx()) {
-                        DataWriteOperations ops = ctx.get().dataWriteOperations();
-                        for (long i = 0; i < BATCH_SIZE; i++) {
-                            long node = i + start;
-                            if (node >= nodeCount) break;
-                            double value = getResult(node);
-                            if (value > 0) {
-                                ops.nodeSetProperty(node, DefinedProperty.doubleProperty(pagerankId, value));
-                            }
-                        }
-                        tx.success();
-                    } catch (ConstraintValidationKernelException | InvalidTransactionTypeKernelException | EntityNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            futures.add(future);
-        }
-        Utils.waitForTasks(futures);
-    }
+
 }

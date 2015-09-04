@@ -72,3 +72,10 @@ An optional query parameter "iterations" has a default of 20.
 
 There are some JMH performance tests included in this repository.
 Use [IntelliJ](https://www.jetbrains.com/idea/ "IntelliJ") and run them with the [JMH Plugin](https://github.com/artyushov/idea-jmh-plugin "JMH Plugin").
+
+# Todo
+
+* Degree Centrality
+* Closeness Centrality
+* Betweenness Centrality
+* Other Graph Algorithms

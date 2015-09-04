@@ -9,6 +9,14 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.api.DataWriteOperations;
+import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
+import org.neo4j.kernel.api.exceptions.InvalidTransactionTypeKernelException;
+import org.neo4j.kernel.api.exceptions.schema.ConstraintValidationKernelException;
+import org.neo4j.kernel.api.exceptions.schema.IllegalTokenNameException;
+import org.neo4j.kernel.api.properties.DefinedProperty;
+import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.ws.rs.*;
@@ -55,7 +63,7 @@ public class Service {
 
         PageRankArrayStorageParallelSPI pageRank = new PageRankArrayStorageParallelSPI(db,pool);
         pageRank.compute(label, type, iterations);
-        pageRank.writeBackResults();
+        writeBackResults(db, pageRank);
 
         return "PageRank for " + label + " and " + type + " Completed!";
     }
@@ -88,8 +96,15 @@ public class Service {
         return "UnionFind for " + label + " and " + type + " Completed!";
     }
 
-    private void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
-        String propertyName = algorithm.getPropertyName();
+    public void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {
+        ThreadToStatementContextBridge ctx = ((GraphDatabaseAPI)db).getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
+        int propertyNameId;
+        try (Transaction tx = db.beginTx()) {
+            propertyNameId = ctx.get().tokenWriteOperations().propertyKeyGetOrCreateForName(algorithm.getPropertyName());
+            tx.success();
+        } catch (IllegalTokenNameException e) {
+            throw new RuntimeException(e);
+        }
         final long nodes = algorithm.numberOfNodes();
         int batches = (int) nodes / WRITE_BATCH;
         List<Future> futures = new ArrayList<>(batches);
@@ -98,22 +113,24 @@ public class Service {
             Future future = pool.submit(new Runnable() {
                 public void run() {
                     try (Transaction tx = db.beginTx()) {
+                        DataWriteOperations ops = ctx.get().dataWriteOperations();
                         for (long i = 0; i < WRITE_BATCH; i++) {
                             long node = i + start;
                             if (node >= nodes) break;
                             double value = algorithm.getResult(node);
                             if (value > 0) {
-                                db.getNodeById(node).setProperty(propertyName, value);
+                                ops.nodeSetProperty(node, DefinedProperty.doubleProperty(propertyNameId, value));
                             }
                         }
                         tx.success();
+                    } catch (ConstraintValidationKernelException | InvalidTransactionTypeKernelException | EntityNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             });
             futures.add(future);
         }
         Utils.waitForTasks(futures);
-        
-
     }
+
 }
