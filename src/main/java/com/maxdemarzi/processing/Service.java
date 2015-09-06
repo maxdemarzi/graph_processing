@@ -1,14 +1,12 @@
 package com.maxdemarzi.processing;
 
+import com.maxdemarzi.processing.centrality.DegreeArrayStorageParallelSPI;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagation;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagationMapStorage;
 import com.maxdemarzi.processing.pagerank.*;
 import com.maxdemarzi.processing.unionfind.UnionFind;
 import com.maxdemarzi.processing.unionfind.UnionFindMapStorage;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.api.DataWriteOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
@@ -20,6 +18,7 @@ import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.ws.rs.*;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +60,7 @@ public class Service {
                            @DefaultValue("20") @QueryParam("iterations") int iterations,
                            @Context GraphDatabaseService db) {
 
-        PageRankArrayStorageParallelSPI pageRank = new PageRankArrayStorageParallelSPI(db,pool);
+        PageRankArrayStorageParallelSPI pageRank = new PageRankArrayStorageParallelSPI(db, pool);
         pageRank.compute(label, type, iterations);
         writeBackResults(db, pageRank);
 
@@ -94,6 +93,45 @@ public class Service {
         writeBackResults(db, unionFind);
 
         return "UnionFind for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/centrality/indegree/{label}/{type}")
+    public String inDegree(@PathParam("label") String label,
+                            @PathParam("type") String type,
+                            @Context GraphDatabaseService db) {
+
+        DegreeArrayStorageParallelSPI inDegree = new DegreeArrayStorageParallelSPI(db, pool, Direction.INCOMING);
+        inDegree.compute(label, type, 1);
+        writeBackResults(db, inDegree);
+
+        return "InDegree Centrality for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/centrality/outdegree/{label}/{type}")
+    public String outDegree(@PathParam("label") String label,
+                           @PathParam("type") String type,
+                           @Context GraphDatabaseService db) {
+
+        DegreeArrayStorageParallelSPI outDegree = new DegreeArrayStorageParallelSPI(db, pool, Direction.OUTGOING);
+        outDegree.compute(label, type, 1);
+        writeBackResults(db, outDegree);
+
+        return "OutDegree Centrality for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/centrality/degree/{label}/{type}")
+    public String degree(@PathParam("label") String label,
+                            @PathParam("type") String type,
+                            @Context GraphDatabaseService db) {
+
+        DegreeArrayStorageParallelSPI degree = new DegreeArrayStorageParallelSPI(db, pool, Direction.BOTH);
+        degree.compute(label, type, 0);
+        writeBackResults(db, degree);
+
+        return "Degree Centrality for " + label + " and " + type + " Completed!";
     }
 
     public void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {

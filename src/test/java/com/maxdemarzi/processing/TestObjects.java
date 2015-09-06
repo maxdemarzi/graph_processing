@@ -2,9 +2,23 @@ package com.maxdemarzi.processing;
 
 public class TestObjects {
 
-    public static final String PERSON_PG_QUERY = "MATCH (p:Person) WHERE p.name = {name} RETURN id(p) as id, p.name as name, p.pagerank as pagerank, p.label as label, p.unionfind as unionfind";
+    public static final String PERSON_RESULT_QUERY = "MATCH (p:Person) " +
+            "WHERE p.name = {name} " +
+            "RETURN id(p) AS id, " +
+            "p.name AS name, " +
+            "p.pagerank AS pagerank, " +
+            "p.label AS label, " +
+            "p.unionfind AS unionfind, " +
+            "p.degree_centrality AS degree_centrality, " +
+            "p.out_degree_centrality AS out_degree_centrality";
 
-    public static final String KNOWS_QUERY = "MATCH (a1:Person)-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coActors)\n" +
+    public static final String MOVIE_RESULT_QUERY = "MATCH (m:Movie) " +
+        "WHERE m.title = {title} " +
+        "RETURN id(m) AS id, " +
+        "m.in_degree_centrality AS in_degree_centrality";
+
+
+        public static final String KNOWS_QUERY = "MATCH (a1:Person)-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coActors)\n" +
             "CREATE (a1)-[:KNOWS]->(coActors);";
 
     public static final String MOVIES_QUERY = "CREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to the Real World'})\n" +

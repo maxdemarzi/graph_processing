@@ -1,28 +1,22 @@
 package com.maxdemarzi.processing.pagerank;
 
 import com.maxdemarzi.processing.NodeCounter;
-import com.maxdemarzi.processing.Utils;
+import com.maxdemarzi.processing.OpsRunner;
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.api.DataWriteOperations;
 import org.neo4j.kernel.api.ReadOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
-import org.neo4j.kernel.api.exceptions.InvalidTransactionTypeKernelException;
-import org.neo4j.kernel.api.exceptions.schema.ConstraintValidationKernelException;
-import org.neo4j.kernel.api.exceptions.schema.IllegalTokenNameException;
-import org.neo4j.kernel.api.properties.DefinedProperty;
 import org.neo4j.kernel.impl.api.RelationshipVisitor;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+
+import static com.maxdemarzi.processing.Utils.*;
 
 /**
  * @author mh
@@ -70,7 +64,7 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
                 startIteration(src, dst, degrees);
 
                 PrimitiveLongIterator rels = ops.relationshipsGetAll();
-                runOperations(rels, relCount , ops, new OpsRunner() {
+                runOperations(pool, rels, relCount , ops, new OpsRunner() {
                     public void run(int id) throws EntityNotFoundException {
                         ops.relationshipVisit(id, visitor);
                     }
@@ -90,19 +84,12 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
         }
     }
 
-    private static int toInt(double value) {
-        return (int) (100_000*value);
-    }
-    private static double toFloat(int value) {
-        return value / 100_000.0;
-    }
-
     private int[] computeDegrees(ReadOperations ops, int labelId, int relationshipId) throws EntityNotFoundException {
         int[] degree = new int[nodeCount];
         Arrays.fill(degree,-1);
         PrimitiveLongIterator it = ops.nodesGetForLabel(labelId);
         int totalCount = nodeCount;
-        runOperations(it, totalCount, ops, new OpsRunner() {
+        runOperations(pool, it, totalCount, ops, new OpsRunner() {
             public void run(int id) throws EntityNotFoundException {
                 degree[id] = ops.nodeGetDegree(id, Direction.OUTGOING, relationshipId);
             }
@@ -110,57 +97,6 @@ public class PageRankArrayStorageParallelSPI implements PageRank {
         return degree;
     }
 
-    private void runOperations(final PrimitiveLongIterator it, int totalCount, ReadOperations ops, OpsRunner runner) {
-        List<Future> futures = new ArrayList<>((int)(totalCount / BATCH_SIZE));
-        while (it.hasNext()) {
-            futures.add(pool.submit(new BatchRunnable(ops, it, BATCH_SIZE,runner)));
-        }
-        Utils.waitForTasks(futures);
-    }
-
-    static final int BATCH_SIZE  = 100_000;
-
-    static class BatchRunnable implements Runnable, OpsRunner {
-        final long[] ids;
-        final ReadOperations ops;
-        private final OpsRunner runner;
-        int offset =0;
-
-        public BatchRunnable(ReadOperations ops, PrimitiveLongIterator iterator, int batchSize, OpsRunner runner) {
-            ids = add(iterator,batchSize);
-            this.ops = ops;
-            this.runner = runner;
-        }
-
-        private long[] add(PrimitiveLongIterator it, int count) {
-            long[] ids = new long[count];
-            while (count--> 0 && it.hasNext()) {
-                ids[offset++]=it.next();
-            }
-            return ids;
-        }
-
-        public void run() {
-            int notFound = 0;
-            for (int i=0;i<offset;i++) {
-                try {
-                    run((int) ids[i]);
-                } catch (EntityNotFoundException e) {
-                    notFound++;
-                }
-            }
-            if (notFound > 0 ) System.err.println("Entities not found "+notFound);
-        }
-
-        @Override
-        public void run(int node) throws EntityNotFoundException {
-            runner.run(node);
-        }
-    }
-
-    interface OpsRunner {
-        void run(int node) throws EntityNotFoundException;
-    }
     @Override
     public double getResult(long node) {
         return dst != null ? toFloat(dst.get((int) node)) : 0;

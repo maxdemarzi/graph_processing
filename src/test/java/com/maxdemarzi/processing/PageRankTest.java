@@ -6,14 +6,10 @@ import com.maxdemarzi.processing.pagerank.PageRank;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorage;
 import com.maxdemarzi.processing.pagerank.PageRankArrayStorageSPI;
 import com.maxdemarzi.processing.pagerank.PageRankMapStorage;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.junit.*;
-import org.neo4j.graphdb.*;
 
 import org.neo4j.test.TestGraphDatabaseFactory;
 
@@ -97,7 +93,7 @@ public class PageRankTest {
     }
 
     private Map<String, Object> getEntry(String name) {
-        try (Result result = db.execute(TestObjects.PERSON_PG_QUERY, Collections.singletonMap("name", name))) {
+        try (Result result = db.execute(TestObjects.PERSON_RESULT_QUERY, Collections.singletonMap("name", name))) {
             return result.next();
         }
     }

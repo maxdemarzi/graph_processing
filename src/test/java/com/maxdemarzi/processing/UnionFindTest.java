@@ -71,7 +71,7 @@ public class UnionFindTest {
     }
 
     private Map<String, Object> getEntry(String name) {
-        try (Result result = db.execute(TestObjects.PERSON_PG_QUERY, Collections.singletonMap("name", name))) {
+        try (Result result = db.execute(TestObjects.PERSON_RESULT_QUERY, Collections.singletonMap("name", name))) {
             return result.next();
         }
     }

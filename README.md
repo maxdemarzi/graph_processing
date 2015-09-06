@@ -48,25 +48,25 @@ You should see "PageRank for Person and KNOWS Completed!"
 
 # Algorithms Implemented
 
-- Page Rank Map Storage
-- Page Rank Array Storage
-- Page Rank Array Storage Service Provider Interface (uses internal Neo4j methods)
-- Label Propagation Map Storage
-- Union Find Map Storage
+- Page Rank
+- Label Propagation
+- Union Find
+- Degree Centrality
 
 # Endpoints
 
 Replace "swordfish" below with your neo4j password.  The available endpoints are:
 
-        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/Person/KNOWS          # Map
-        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank2/Person/KNOWS         # Array
-        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank3/Person/KNOWS         # Array SPI
-        curl http://neo4j:swordfish@localhost:7474/service/v1/labelpropagation/Person/KNOWS  # Map
-        curl http://neo4j:swordfish@localhost:7474/service/v1/unionfind/Person/KNOWS         # Map
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/labelpropagation/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/unionfind/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/degree/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/indegree/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/outdegree/{Label}/{RelationshipType}
 
 An optional query parameter "iterations" has a default of 20.
 
-        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/Person/KNOWS?iterations=25
+        curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/{Label}/{RelationshipType}?iterations=25
 
 # Performance
 
@@ -75,7 +75,6 @@ Use [IntelliJ](https://www.jetbrains.com/idea/ "IntelliJ") and run them with the
 
 # Todo
 
-* Degree Centrality
 * Closeness Centrality
 * Betweenness Centrality
 * Other Graph Algorithms
