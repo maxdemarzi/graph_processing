@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import static com.maxdemarzi.processing.Utils.runOperations;
 
 public class DegreeArrayStorageParallelSPI implements Centrality {
-    static final int BATCH_SIZE  = 100_000;
     private final GraphDatabaseAPI db;
     private final int nodeCount;
     private final ExecutorService pool;
@@ -39,8 +38,6 @@ public class DegreeArrayStorageParallelSPI implements Centrality {
     public void compute(String label, String type, int iterations) {
         degree = new int[nodeCount];
         Arrays.fill(degree, -1);
-
-
 
         try ( Transaction tx = db.beginTx()) {
             ThreadToStatementContextBridge ctx = this.db.getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
@@ -69,7 +66,7 @@ public class DegreeArrayStorageParallelSPI implements Centrality {
 
     @Override
     public long numberOfNodes() {
-        return 0;
+        return nodeCount;
     }
 
     @Override

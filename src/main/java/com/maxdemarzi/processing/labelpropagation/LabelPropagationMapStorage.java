@@ -1,9 +1,8 @@
 package com.maxdemarzi.processing.labelpropagation;
 
+import com.maxdemarzi.processing.NodeCounter;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.transaction.state.NeoStoreSupplier;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 public class LabelPropagationMapStorage implements LabelPropagation {
@@ -13,8 +12,7 @@ public class LabelPropagationMapStorage implements LabelPropagation {
 
     public LabelPropagationMapStorage(GraphDatabaseService db) {
         this.db = db;
-        NeoStoreSupplier neoStoreSupplier = ((GraphDatabaseAPI)db).getDependencyResolver().resolveDependency(NeoStoreSupplier.class);
-        this.nodes = neoStoreSupplier.get().getHighId();
+        this.nodes = new NodeCounter().getNodeCount(db);
     }
 
     @Override
