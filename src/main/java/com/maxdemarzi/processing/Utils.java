@@ -1,6 +1,12 @@
 package com.maxdemarzi.processing;
 
 import org.neo4j.collection.primitive.PrimitiveLongIterator;
+import org.neo4j.graphalgo.CostEvaluator;
+import org.neo4j.graphalgo.impl.shortestpath.SingleSourceShortestPath;
+import org.neo4j.graphalgo.impl.shortestpath.SingleSourceShortestPathDijkstra;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.kernel.api.ReadOperations;
 
 import java.util.ArrayList;
@@ -20,6 +26,22 @@ public class Utils {
     public static double toFloat(int value) {
         return value / 100_000.0;
     }
+
+    public static SingleSourceShortestPath<Double> getSingleSourceShortestPath(RelationshipType relationshipType)
+    {
+        return new SingleSourceShortestPathDijkstra<Double>( 0.0, null,
+                new CostEvaluator<Double>()
+                {
+                    public Double getCost( Relationship relationship,
+                                           Direction direction )
+                    {
+                        return 1.0;
+                    }
+                }, new org.neo4j.graphalgo.impl.util.DoubleAdder(),
+                new org.neo4j.graphalgo.impl.util.DoubleComparator(),
+                Direction.BOTH, relationshipType );
+    }
+
 
     static ExecutorService createPool(int threads, int queueSize) {
         return new ThreadPoolExecutor(1, threads, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>(queueSize),

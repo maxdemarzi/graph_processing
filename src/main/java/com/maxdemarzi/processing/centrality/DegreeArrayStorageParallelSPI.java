@@ -10,7 +10,6 @@ import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.api.ReadOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
-
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 

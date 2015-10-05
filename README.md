@@ -51,7 +51,11 @@ You should see "PageRank for Person and KNOWS Completed!"
 - Page Rank
 - Label Propagation
 - Union Find
+- Betweenness Centrality
+- Closeness Centrality
 - Degree Centrality
+
+
 
 # Endpoints
 
@@ -60,10 +64,12 @@ Replace "swordfish" below with your neo4j password.  The available endpoints are
         curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/{Label}/{RelationshipType}
         curl http://neo4j:swordfish@localhost:7474/service/v1/labelpropagation/{Label}/{RelationshipType}
         curl http://neo4j:swordfish@localhost:7474/service/v1/unionfind/{Label}/{RelationshipType}
-        curl http://neo4j:swordfish@localhost:7474/service/v1/degree/{Label}/{RelationshipType}
-        curl http://neo4j:swordfish@localhost:7474/service/v1/indegree/{Label}/{RelationshipType}
-        curl http://neo4j:swordfish@localhost:7474/service/v1/outdegree/{Label}/{RelationshipType}
-
+        curl http://neo4j:swordfish@localhost:7474/service/v1/centrality/betweenness/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/centrality/closeness/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/centrality/degree/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/centrality/indegree/{Label}/{RelationshipType}
+        curl http://neo4j:swordfish@localhost:7474/service/v1/centrality/outdegree/{Label}/{RelationshipType}
+                
 An optional query parameter "iterations" has a default of 20.
 
         curl http://neo4j:swordfish@localhost:7474/service/v1/pagerank/{Label}/{RelationshipType}?iterations=25
@@ -75,6 +81,5 @@ Use [IntelliJ](https://www.jetbrains.com/idea/ "IntelliJ") and run them with the
 
 # Todo
 
-* Closeness Centrality
-* Betweenness Centrality
+* Convert Centrality to use Cursor SPI
 * Other Graph Algorithms

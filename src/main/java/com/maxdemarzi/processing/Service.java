@@ -1,5 +1,7 @@
 package com.maxdemarzi.processing;
 
+import com.maxdemarzi.processing.centrality.Betweenness;
+import com.maxdemarzi.processing.centrality.Closeness;
 import com.maxdemarzi.processing.centrality.DegreeArrayStorageParallelSPI;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagation;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagationMapStorage;
@@ -132,6 +134,32 @@ public class Service {
         writeBackResults(db, degree);
 
         return "Degree Centrality for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/centrality/betweenness/{label}/{type}")
+    public String betweenness(@PathParam("label") String label,
+                         @PathParam("type") String type,
+                         @Context GraphDatabaseService db) {
+
+        Betweenness centrality = new Betweenness(db);
+        centrality.compute(label, type, 0);
+        writeBackResults(db, centrality);
+
+        return "Betweenness Centrality for " + label + " and " + type + " Completed!";
+    }
+
+    @GET
+    @Path("/centrality/closeness/{label}/{type}")
+    public String closeness(@PathParam("label") String label,
+                              @PathParam("type") String type,
+                              @Context GraphDatabaseService db) {
+
+        Closeness centrality = new Closeness(db);
+        centrality.compute(label, type, 0);
+        writeBackResults(db, centrality);
+
+        return "Closeness Centrality for " + label + " and " + type + " Completed!";
     }
 
     public void writeBackResults(GraphDatabaseService db, Algorithm algorithm) {

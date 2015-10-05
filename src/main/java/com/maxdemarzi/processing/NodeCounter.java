@@ -2,7 +2,7 @@ package com.maxdemarzi.processing;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.store.NeoStore;
+import org.neo4j.kernel.impl.store.NeoStores;
 
 /**
  * @author mh
@@ -10,11 +10,11 @@ import org.neo4j.kernel.impl.store.NeoStore;
  */
 public class NodeCounter {
     public int getNodeCount(GraphDatabaseService db) {
-        NeoStore neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStore.class);
+        NeoStores neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStores.class);
         return (int) neoStore.getNodeStore().getHighId();
     }
     public int getRelationshipCount(GraphDatabaseService db) {
-        NeoStore neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStore.class);
+        NeoStores neoStore = ((GraphDatabaseAPI) db).getDependencyResolver().resolveDependency(NeoStores.class);
         return (int) neoStore.getRelationshipStore().getHighId();
     }
 }

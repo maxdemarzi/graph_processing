@@ -9,7 +9,7 @@
     <version>2.3-SNAPSHOT</version>
 
     <properties>
-        <!--<neo4j.version>2.2.0</neo4j.version>-->
+        <!-- <neo4j.version>2.3.0-M01</neo4j.version> -->
         <neo4j.version>2.3-SNAPSHOT</neo4j.version>
         <guava.version>18.0</guava.version>
         <jmh.version>1.10.5</jmh.version>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-graph-algo</artifactId>
             <version>${neo4j.version}</version>
         </dependency>
         <dependency>

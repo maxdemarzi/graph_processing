@@ -88,7 +88,7 @@ public class PageRankTest {
         Map<String, Object> row = getEntry("Tom Hanks");
 //        assertEquals( 4.642800717539658, pageranks.next() );
         double rank = (double) row.get("pagerank");
-        assertEquals(expected, rank,0.1D);
+        assertEquals(expected, rank, 0.1D);
         System.out.println(row);
     }
 

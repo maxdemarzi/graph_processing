@@ -83,8 +83,4 @@ public class DegreeCentralityTest {
         long id = (long) TestUtils.getPersonEntry("Tom Hanks", db).get("id");
         assertTrue("outDegree Centrality calculted incorrectly", 12 == degree.getResult(id));
     }
-
-
-
-
 }
