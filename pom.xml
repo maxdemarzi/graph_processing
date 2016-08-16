@@ -9,8 +9,8 @@
     <version>2.3-SNAPSHOT</version>
 
     <properties>
-        <!-- <neo4j.version>2.3.0-M01</neo4j.version> -->
-        <neo4j.version>2.3-SNAPSHOT</neo4j.version>
+        <!-- <neo4j.version>2.3.6</neo4j.version> -->
+        <neo4j.version>3.0.4</neo4j.version>
         <guava.version>18.0</guava.version>
         <jmh.version>1.10.5</jmh.version>
         <fastutil.version>7.0.2</fastutil.version>

@@ -80,6 +80,7 @@ There are some JMH performance tests included in this repository.
 Use [IntelliJ](https://www.jetbrains.com/idea/ "IntelliJ") and run them with the [JMH Plugin](https://github.com/artyushov/idea-jmh-plugin "JMH Plugin").
 
 # Todo
-
+* https://graph-tool.skewed.de/static/doc/index.html
+http://snap.stanford.edu/proj/snap-icwsm/SNAP-ICWSM14.pdf
 * Convert Centrality to use Cursor SPI
 * Other Graph Algorithms

@@ -2,7 +2,6 @@ package com.maxdemarzi.processing.pagerank;
 
 import com.maxdemarzi.processing.NodeCounter;
 import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Arrays;
 
@@ -35,7 +34,7 @@ public class PageRankArrayStorage implements PageRank {
 
                 startIteration(src, dst, degrees);
 
-                for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
+                for( Relationship relationship : db.getAllRelationships()) {
                     if (relationship.isType(relationshipType)) {
                         int x = (int) relationship.getStartNode().getId();
                         int y = (int) relationship.getEndNode().getId();

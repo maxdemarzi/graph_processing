@@ -41,8 +41,17 @@ public class LabelPropagationPerformance {
     @Fork(3)
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void measurePageRank() throws IOException {
+    public void measureLabelPropagation() throws IOException {
         service.labelPropagation("Person", "KNOWS", 20, db);
     }
 
+    @Benchmark
+    @Warmup(iterations = 10)
+    @Measurement(iterations = 5)
+    @Fork(3)
+    @BenchmarkMode(Mode.AverageTime)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void measureLabelPropagation2() throws IOException {
+   //     service.labelPropagation2("Person", "KNOWS", 20, db);
+    }
 }

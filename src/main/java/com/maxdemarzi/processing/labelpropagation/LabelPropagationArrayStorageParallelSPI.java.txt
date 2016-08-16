@@ -1,0 +1,96 @@
+package com.maxdemarzi.processing.labelpropagation;
+
+import com.maxdemarzi.processing.NodeCounter;
+import org.neo4j.collection.primitive.PrimitiveLongIterator;
+import org.neo4j.cursor.Cursor;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.api.ReadOperations;
+import org.neo4j.kernel.api.cursor.RelationshipItem;
+import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
+
+public class LabelPropagationArrayStorageParallelSPI implements LabelPropagation {
+    private final GraphDatabaseAPI db;
+    private final int nodeCount;
+    private final ExecutorService pool;
+    private AtomicIntegerArray results;
+
+    public LabelPropagationArrayStorageParallelSPI(GraphDatabaseService db, ExecutorService pool) {
+        this.db = (GraphDatabaseAPI)db;
+        this.pool = pool;
+        this.nodeCount = new NodeCounter().getNodeCount(db);
+    }
+
+
+    @Override
+    public void compute(String label, String type, int iterations) {
+        boolean done = false;
+        int iteration = 0;
+        results = new AtomicIntegerArray(nodeCount);
+        try ( Transaction tx = db.beginTx()) {
+            ThreadToStatementContextBridge ctx = this.db.getDependencyResolver().resolveDependency(ThreadToStatementContextBridge.class);
+            ReadOperations ops = ctx.get().readOperations();
+            int labelId = ops.labelGetForName(label);
+            int relationshipTypeId = ops.relationshipTypeGetForName(type);
+
+            PrimitiveLongIterator nodes = ops.nodesGetForLabel(labelId);
+            while (nodes.hasNext()) {
+                int node = (int)nodes.next();
+                results.set(node, node);
+            }
+
+            /*int totalCount = nodeCount;
+            runOperations(pool, it, totalCount, ops, new OpsRunner() {
+                public void run(int id) throws EntityNotFoundException {
+                    results.set(id, id);
+                }
+            });
+*/
+            while (!done) {
+                done = true;
+                iteration++;
+                Cursor<RelationshipItem> rels = ops.relationshipCursorGetAll();
+                while(rels.next()) {
+                    RelationshipItem rel = rels.get();
+                    if (rel.type() == relationshipTypeId) {
+                        int startNode = (int)rel.startNode();
+                        int endNode = (int)rel.endNode();
+
+                        if (rel.startNode() != rel.endNode()) {
+                            if (results.get(startNode) > results.get(endNode)) {
+                                results.set(startNode, results.get(endNode));
+                                done = false;
+                            } else if (results.get(startNode) < results.get(endNode)) {
+                                results.set(endNode, results.get(startNode));
+                                done = false;
+                            }
+                        }
+                    }
+                }
+
+                if (iteration > iterations) {
+                    done = true;
+                }
+            }
+
+            tx.success();
+        } catch (Exception e) {
+           e.printStackTrace();
+        }
+    }
+
+    @Override
+    public double getResult(long node) {
+        return results != null ? results.get((int) node) : 0;
+    }
+
+    @Override
+    public long numberOfNodes() {
+        return nodeCount;
+    }
+}

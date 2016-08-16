@@ -4,7 +4,6 @@ import com.maxdemarzi.processing.NodeCounter;
 import org.neo4j.graphalgo.impl.centrality.BetweennessCentrality;
 import org.neo4j.graphalgo.impl.shortestpath.SingleSourceShortestPath;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,12 +11,12 @@ import java.util.Set;
 import static com.maxdemarzi.processing.Utils.getSingleSourceShortestPath;
 
 public class Betweenness implements Centrality {
-    private final GraphDatabaseAPI db;
+    private final GraphDatabaseService db;
     private final int nodeCount;
     private BetweennessCentrality<Double> betweennessCentrality;
 
     public Betweenness(GraphDatabaseService db){
-        this.db = (GraphDatabaseAPI) db;
+        this.db = db;
         this.nodeCount = new NodeCounter().getNodeCount(db);
     }
 
@@ -26,7 +25,7 @@ public class Betweenness implements Centrality {
         SingleSourceShortestPath<Double> singleSourceShortestPath = getSingleSourceShortestPath(DynamicRelationshipType.withName(type));
         Set<Node> nodes = new HashSet<>();
         try ( Transaction tx = db.beginTx()) {
-            ResourceIterator<Node> iterator = db.findNodes(DynamicLabel.label(label));
+            ResourceIterator<Node> iterator = db.findNodes(Label.label(label));
             while (iterator.hasNext()) {
                 nodes.add(iterator.next());
             }

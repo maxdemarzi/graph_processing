@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 /*
     Weighted quick-union with path compression
@@ -27,7 +26,7 @@ public class UnionFindMapStorage implements UnionFind {
 
     @Override
     public void compute(String label, String type, int iterations) {
-        RelationshipType relationshipType = DynamicRelationshipType.withName(type);
+        RelationshipType relationshipType = RelationshipType.withName(type);
 
         try ( Transaction tx = db.beginTx()) {
             ResourceIterator<Node> nodes = db.findNodes(DynamicLabel.label(label));
@@ -37,7 +36,7 @@ public class UnionFindMapStorage implements UnionFind {
                 rankMap.put(nodeId, 1);
             }
 
-            for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
+            for( Relationship relationship : db.getAllRelationships()) {
                 if (relationship.isType(relationshipType)) {
 
                     long x = relationship.getStartNode().getId();

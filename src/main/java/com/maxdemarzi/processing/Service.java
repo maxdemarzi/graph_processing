@@ -9,7 +9,8 @@ import com.maxdemarzi.processing.pagerank.*;
 import com.maxdemarzi.processing.unionfind.UnionFind;
 import com.maxdemarzi.processing.unionfind.UnionFindMapStorage;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.api.exceptions.legacyindex.AutoIndexingKernelException;
+import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.kernel.api.DataWriteOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.api.exceptions.InvalidTransactionTypeKernelException;
@@ -17,7 +18,6 @@ import org.neo4j.kernel.api.exceptions.schema.ConstraintValidationKernelExceptio
 import org.neo4j.kernel.api.exceptions.schema.IllegalTokenNameException;
 import org.neo4j.kernel.api.properties.DefinedProperty;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import javax.ws.rs.*;
 import javax.ws.rs.Path;
@@ -44,7 +44,7 @@ public class Service {
     @Path("/warmup")
     public String warmUp(@Context GraphDatabaseService db) {
         try ( Transaction tx = db.beginTx()) {
-            for ( Node n : GlobalGraphOperations.at(db).getAllNodes()) {
+            for ( Node n : db.getAllNodes()) {
                 n.getPropertyKeys();
                 for ( Relationship relationship : n.getRelationships()) {
                     relationship.getPropertyKeys();
@@ -189,7 +189,7 @@ public class Service {
                             }
                         }
                         tx.success();
-                    } catch (ConstraintValidationKernelException | InvalidTransactionTypeKernelException | EntityNotFoundException e) {
+                    } catch (AutoIndexingKernelException | ConstraintValidationKernelException | InvalidTransactionTypeKernelException | EntityNotFoundException e) {
                         e.printStackTrace();
                     }
                 }

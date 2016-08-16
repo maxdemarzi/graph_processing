@@ -1,6 +1,7 @@
 package com.maxdemarzi.processing;
 
 import com.maxdemarzi.processing.labelpropagation.LabelPropagation;
+//import com.maxdemarzi.processing.labelpropagation.LabelPropagationArrayStorageParallelSPI;
 import com.maxdemarzi.processing.labelpropagation.LabelPropagationMapStorage;
 import org.junit.After;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,6 +22,8 @@ public class LabelPropagationTest {
     public static final double EXPECTED = 1.0;
     private GraphDatabaseService db;
     private static Service service;
+    public static final int CPUS = Runtime.getRuntime().availableProcessors();
+    static ExecutorService pool = Utils.createPool(CPUS, CPUS*25);
 
     @Before
     public void setUp() {
@@ -54,6 +58,8 @@ public class LabelPropagationTest {
         long id = (long) getEntry("Tom Hanks").get("id");
         assertEquals(EXPECTED, labelPropagation.getResult(id),0.1D);
     }
+
+
 
     private Map<String, Object> getEntry(String name) {
         try (Result result = db.execute(TestObjects.PERSON_RESULT_QUERY, Collections.singletonMap("name", name))) {

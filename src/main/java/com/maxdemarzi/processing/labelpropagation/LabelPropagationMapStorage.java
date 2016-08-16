@@ -3,7 +3,6 @@ package com.maxdemarzi.processing.labelpropagation;
 import com.maxdemarzi.processing.NodeCounter;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 public class LabelPropagationMapStorage implements LabelPropagation {
     private final GraphDatabaseService db;
@@ -17,7 +16,7 @@ public class LabelPropagationMapStorage implements LabelPropagation {
 
     @Override
     public void compute(String label, String type, int iterations) {
-        RelationshipType relationshipType = DynamicRelationshipType.withName(type);
+        RelationshipType relationshipType = RelationshipType.withName(type);
         labelMap = new Long2DoubleOpenHashMap();
         boolean done = false;
         int iteration = 0;
@@ -32,7 +31,7 @@ public class LabelPropagationMapStorage implements LabelPropagation {
                 done = true;
                 iteration++;
 
-                for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
+                for( Relationship relationship : db.getAllRelationships()) {
                     if (relationship.isType(relationshipType)) {
                         long x = relationship.getStartNode().getId();
                         long y = relationship.getEndNode().getId();

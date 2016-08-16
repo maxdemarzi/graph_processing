@@ -6,7 +6,7 @@ import org.neo4j.collection.primitive.PrimitiveLongIterator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.internal.GraphDatabaseAPI;
 import org.neo4j.kernel.api.ReadOperations;
 import org.neo4j.kernel.api.exceptions.EntityNotFoundException;
 import org.neo4j.kernel.impl.core.ThreadToStatementContextBridge;
@@ -25,7 +25,7 @@ public class DegreeArrayStorageParallelSPI implements Centrality {
 
     public DegreeArrayStorageParallelSPI(GraphDatabaseService db, ExecutorService pool, Direction direction) {
         this.pool = pool;
-        this.db = (GraphDatabaseAPI) db;
+        this.db = (GraphDatabaseAPI)db;
         this.nodeCount = new NodeCounter().getNodeCount(db);
         this.direction = direction;
         if (!direction.equals(Direction.BOTH)) {

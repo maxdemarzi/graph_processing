@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 /**
  * @author mh
@@ -28,10 +27,10 @@ public class PageRankMapStorage implements PageRank {
         Long2LongMap degreeMap = new Long2LongOpenHashMap();
         dstMap = new Long2DoubleOpenHashMap(nodes);
 
-        RelationshipType relationshipType = DynamicRelationshipType.withName(type);
+        RelationshipType relationshipType = RelationshipType.withName(type);
 
         try ( Transaction tx = db.beginTx()) {
-            ResourceIterator<Node> nodes = db.findNodes(DynamicLabel.label(label));
+            ResourceIterator<Node> nodes = db.findNodes(Label.label(label));
             while (nodes.hasNext()) {
                 Node node = nodes.next();
                 srcMap.put(node.getId(), 0);
@@ -47,7 +46,7 @@ public class PageRankMapStorage implements PageRank {
                     dstMap.put(node.getId(), ONE_MINUS_ALPHA);
                 }
 
-                for( Relationship relationship : GlobalGraphOperations.at(db).getAllRelationships()) {
+                for( Relationship relationship : db.getAllRelationships()) {
                     if (relationship.isType(relationshipType)) {
                         long x = relationship.getStartNode().getId();
                         long y = relationship.getEndNode().getId();

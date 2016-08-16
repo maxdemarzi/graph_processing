@@ -18,17 +18,13 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class UnionFindTest {
-    public static final double EXPECTED = 1.0;
+    public static final double EXPECTED = 2.0;
     private GraphDatabaseService db;
     private static Service service;
 
     @Before
     public void setUp() {
         db = new TestGraphDatabaseFactory().newImpermanentDatabase();
-        String storeDir = "/Users/maxdemarzi/Projects/graph_processing/neo4j/data/graph.db";
-        //db = new GraphDatabaseFactory()
-        //        .newEmbeddedDatabaseBuilder( storeDir )
-        //        .newGraphDatabase();
         service = new Service();
         populateDb(db);
     }

@@ -6,7 +6,6 @@ import org.neo4j.graphalgo.impl.centrality.CostDivider;
 import org.neo4j.graphalgo.impl.shortestpath.SingleSourceShortestPath;
 import org.neo4j.graphalgo.impl.util.DoubleAdder;
 import org.neo4j.graphdb.*;
-import org.neo4j.kernel.GraphDatabaseAPI;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,12 +13,12 @@ import java.util.Set;
 import static com.maxdemarzi.processing.Utils.getSingleSourceShortestPath;
 
 public class Closeness implements Centrality {
-    private final GraphDatabaseAPI db;
+    private final GraphDatabaseService db;
     private final int nodeCount;
     private ClosenessCentrality<Double> closenessCentrality;
 
     public Closeness(GraphDatabaseService db){
-        this.db = (GraphDatabaseAPI) db;
+        this.db = db;
         this.nodeCount = new NodeCounter().getNodeCount(db);
     }
 
@@ -28,7 +27,7 @@ public class Closeness implements Centrality {
         SingleSourceShortestPath<Double> singleSourceShortestPath = getSingleSourceShortestPath(DynamicRelationshipType.withName(type));
         Set<Node> nodes = new HashSet<>();
         try ( Transaction tx = db.beginTx()) {
-            ResourceIterator<Node> iterator = db.findNodes(DynamicLabel.label(label));
+            ResourceIterator<Node> iterator = db.findNodes(Label.label(label));
             while (iterator.hasNext()) {
                 nodes.add(iterator.next());
             }
