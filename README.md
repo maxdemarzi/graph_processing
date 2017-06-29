@@ -1,6 +1,10 @@
 Graph Processing
 ================
 
+This code has been moved over to APOC. See:
+https://neo4j-contrib.github.io/neo4j-apoc-procedures/#_graph_algorithms
+
+
 This is an unmanaged extension with Graph Processing Algorithms on top of Neo4j.
 
 - [![Build Status](https://secure.travis-ci.org/maxdemarzi/graph_processing.png?branch=master)](http://travis-ci.org/maxdemarzi/graph_processing)
