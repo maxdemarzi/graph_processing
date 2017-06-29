@@ -1,8 +1,9 @@
 Graph Processing
 ================
 
-This code has been moved over to APOC. See:
-https://neo4j-contrib.github.io/neo4j-apoc-procedures/#_graph_algorithms
+This code has been moved over to APOC.
+
+See: https://neo4j-contrib.github.io/neo4j-apoc-procedures/#_graph_algorithms
 
 
 This is an unmanaged extension with Graph Processing Algorithms on top of Neo4j.
